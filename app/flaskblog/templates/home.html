@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="row mb-3 justify-content-end">
+        <div class="col-md-8">
+            <form method="GET" action="{{ url_for('main.home') }}">
+                <div class="input-group">
+                    <input type="text" name="search_query" class="form-control" placeholder="Search by keyword" value="{{ request.args.get('search_query', '') }}">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                    <div class="input-group-append">
+                        <a href="{{ url_for('main.extra_action_route') }}?search_query={{ request.args.get('search_query', '') }}" class="btn btn-success">Chart</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% for post in posts.items %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a>
+                    <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+                </div>
+                <h2><a class="article-title" href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
+                <h4 class="article-title">{{ post.hashtag }}</h4>
+                {% if post.sentiment == 'Negative' %}
+                    <p class="article-content">Content censored due to negative sentiment.</p>
+                {% else %}
+                    <p class="article-content">{{ post.content }}</p>
+                {% endif %}
+            </div>
+        </article>
+    {% endfor %}
+    {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if page_num %}
+            {% if posts.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
+    {% endfor %}
+{% endblock content %}
+<script>
+    function performExtraAction() {
+        // Perform the extra action via AJAX
+        fetch("{{ url_for('main.extra_action_route') }}")
+            .then(response => {
+                if (response.ok) {
+                    console.log("Extra action performed successfully");
+                } else {
+                    console.error("Error performing extra action");
+                }
+            })
+            .catch(error => {
+                console.error("Error performing extra action:", error);
+            });
+    }
+</script>

@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <div class="form-group">
+                {{ form.content.label(class="form-control-label") }}
+                {% if form.content.errors %}
+                    {{ form.content(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.content.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.content(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.sentiment(class="form-control form-control-lg", id="sentiment-field", readonly="readonly") }}
+        </div>
+        <div class="form-group">
+            <canvas id="myChart" max-width="100" max-height="100"></canvas>
+        </div>
+        <div class="form-group">
+            {{ form.analyze(class="btn btn-outline-secondary") }}
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+<canvas id="myChart" style="width: 50px; height: 50px;"></canvas>
+<script>
+    function handleCustomButtonClick() {
+        var sentimentField = document.getElementById('sentiment-field');
+        sentimentField.value = "Positive"; // You can change this value as needed
+        alert('Analyze Completed');
+    }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.3.2/chart.min.js"
+     integrity="sha512-VCHVc5miKoln972iJPvkQrUYYq7XpxXzvqNfiul1H4aZDwGBGC0lq373KNleaB2LpnC2a/iNfE5zoRYmB4TRDQ==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    // Convert the JSON string to a JavaScript array
+    let allScores = {{ all_scores | tojson }};
+
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['anger', 'disgust', 'fear','hopelessness', 'joy', 'negative','neutral', 'positive', 'sadness','surprise'],
+            datasets: [{
+                label: "Overall Emotion",
+                data: allScores,
+                backgroundColor: ['#FF5733', '#3498DB', '#FFD700', '#00FFFF', '#FF00FF', '#00FF00', '#FFFF00', '#0000FF', '#800080'],
+                borderWidth: 1,
+                hoverBorderColor: "black",
+                hoverBorderWidth: 2,
+                hoverBackgroundColor: 'rgba(154, 245, 140)',
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            title: {
+                display: false, // Hide default title
+            },
+            legend: {
+                position: "right",
+                labels: {
+                    fontColor: "gray"
+                },
+                display: true,
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Overall Emotion',
+                    font: {
+                        size: 20,
+                        weight: 'bold'
+                    },
+                    color: 'black',
+                    position: 'top'
+                }
+            },
+            elements: {
+                hitRadius: 3,
+            }
+        }
+    });
+</script>
+{% endblock content %}
